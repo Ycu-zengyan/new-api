@@ -31,7 +31,7 @@ jobs:
           context: .
           push: true
           tags: |
-            crpi-ktqzv9pa9ismns06.cn-hangzhou.personal.cr.aliyuncs.com/new-api:latest
-            crpi-ktqzv9pa9ismns06.cn-hangzhou.personal.cr.aliyuncs.com/new-api:${{ github.sha }}
+            crpi-ktqzv9pa9ismns06.cn-hangzhou.personal.cr.aliyuncs.com/llm-hub/new-api:latest
+            crpi-ktqzv9pa9ismns06.cn-hangzhou.personal.cr.aliyuncs.com/llm-hub/new-api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
