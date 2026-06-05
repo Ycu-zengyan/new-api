@@ -152,6 +152,12 @@ var defaultModelRatio = map[string]float64{
 	"claude-opus-4-7-high":                      2.5,
 	"claude-opus-4-7-medium":                    2.5,
 	"claude-opus-4-7-low":                       2.5,
+	"claude-opus-4-8":                           2.5,
+	"claude-opus-4-8-max":                       2.5,
+	"claude-opus-4-8-xhigh":                     2.5,
+	"claude-opus-4-8-high":                      2.5,
+	"claude-opus-4-8-medium":                    2.5,
+	"claude-opus-4-8-low":                       2.5,
 	"claude-3-opus-20240229":                    7.5, // $15 / 1M tokens
 	"claude-opus-4-20250514":                    7.5,
 	"claude-opus-4-1-20250805":                  7.5,
@@ -707,6 +713,18 @@ func GetModelPriceCopy() map[string]float64 {
 
 func GetCompletionRatioCopy() map[string]float64 {
 	return completionRatioMap.ReadAll()
+}
+
+func GetImageRatioCopy() map[string]float64 {
+	return imageRatioMap.ReadAll()
+}
+
+func GetAudioRatioCopy() map[string]float64 {
+	return audioRatioMap.ReadAll()
+}
+
+func GetAudioCompletionRatioCopy() map[string]float64 {
+	return audioCompletionRatioMap.ReadAll()
 }
 
 // 转换模型名，减少渠道必须配置各种带参数模型
