@@ -42,7 +42,7 @@ func convertMiMoTTSRequest(request dto.AudioRequest, isStream bool) (io.Reader, 
 	}
 	voice := request.Voice
 	if voice == "" {
-		voice = "default_zh"
+		voice = "mimo_default"
 	}
 
 	ttsBody := map[string]any{
@@ -99,7 +99,7 @@ func convertMiMoASRRequest(c *gin.Context, request dto.AudioRequest) (io.Reader,
 					{
 						"type": "input_audio",
 						"input_audio": map[string]string{
-							"data":   base64.StdEncoding.EncodeToString(audioBytes),
+							"data":   "data:audio/wav;base64," + base64.StdEncoding.EncodeToString(audioBytes),
 							"format": "wav",
 						},
 					},
