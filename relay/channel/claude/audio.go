@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/constant"
@@ -35,14 +36,47 @@ func getTTSFormat(request dto.AudioRequest) string {
 // convertMiMoTTSRequest 把标准 OpenAI /audio/speech 请求转换为 MiMo TTS 的 Chat
 // Completions 请求体：messages 同时包含 user（风格指令）与 assistant（朗读文本），
 // 音频参数通过顶层 audio 字段指定。
+//
+// 三种子模型的行为差异：
+//   - 普通 TTS：audio.voice 为音色名（缺省 mimo_default）
+//   - VoiceClone：audio.voice 必须是参考音频的 data URL（data:audio/wav;base64,...）
+//     优先取 request.RefAudio，其次取 request.Voice（若已为 data URL）
+//   - VoiceDesign：不设置 audio.voice，音色由 Instructions 描述
 func convertMiMoTTSRequest(request dto.AudioRequest, isStream bool) (io.Reader, error) {
+	isVoiceClone := strings.Contains(request.Model, "voiceclone")
+	isVoiceDesign := strings.Contains(request.Model, "voicedesign")
+
 	instruction := request.Instructions
 	if instruction == "" {
-		instruction = "用自然的语气朗读"
+		if isVoiceDesign {
+			instruction = "用自然的声音朗读"
+		} else {
+			instruction = "用自然的语气朗读"
+		}
 	}
-	voice := request.Voice
-	if voice == "" {
-		voice = "mimo_default"
+
+	audioParams := map[string]string{
+		"format": getTTSFormat(request),
+	}
+
+	if isVoiceClone {
+		// VoiceClone: audio.voice 必须是参考音频的 data URL
+		refAudio := string(request.RefAudio)
+		if refAudio == "" && strings.HasPrefix(request.Voice, "data:") {
+			refAudio = request.Voice
+		}
+		if refAudio != "" {
+			audioParams["voice"] = refAudio
+		}
+	} else if isVoiceDesign {
+		// VoiceDesign: 不设置 audio.voice，音色由 user content 描述
+	} else {
+		// 普通 TTS: voice 为音色名
+		voice := request.Voice
+		if voice == "" {
+			voice = "mimo_default"
+		}
+		audioParams["voice"] = voice
 	}
 
 	ttsBody := map[string]any{
@@ -53,10 +87,7 @@ func convertMiMoTTSRequest(request dto.AudioRequest, isStream bool) (io.Reader, 
 		},
 		"max_tokens": 1024,
 		"stream":     isStream,
-		"audio": map[string]string{
-			"voice":  voice,
-			"format": getTTSFormat(request),
-		},
+		"audio":      audioParams,
 	}
 
 	jsonBytes, err := common.Marshal(ttsBody)
